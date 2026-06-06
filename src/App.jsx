@@ -104,9 +104,9 @@ function App() {
           title: `HN Backup #${i + 1}: ${
             i % 5 === 0 ? 'Mastering React 19 Performance with TanStack Virtual' :
             i % 5 === 1 ? 'Why N+1 Network Waterfalls Kill Frontend Responsiveness' :
-            i % 5 === 2 ? 'Understanding Core Web Vitals: LCP, CLS, and INP' :
+            i % 5 === 2 ? 'Understanding Google Core Web Vitals (LCP, CLS, INP)' :
             i % 5 === 3 ? 'A Guide to Cherry-Picking Imports and Code-Splitting in Vite' :
-            'Containerizing Web Applications using Multi-Stage Docker Builds'
+            'Containerizing HackerNews Web Applications using Docker'
           }`,
           score: Math.floor(Math.random() * 800) + 15,
           by: `perf_engineer_${i % 12}`,
