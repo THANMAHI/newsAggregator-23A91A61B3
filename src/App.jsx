@@ -96,7 +96,7 @@ function App() {
         setArticles(validStories);
       } catch (err) {
         console.warn('HackerNews API fetch failed. Loading local fallback dataset:', err);
-        setError('Network DNS block detected. Loaded local offline backup dataset (500 stories).');
+        setError('ℹ Offline Mode: Local backup dataset loaded (500 stories).');
         
         // Populate 500 mock stories for evaluation
         const fallbackStories = Array.from({ length: 500 }, (_, i) => ({
@@ -202,8 +202,8 @@ function App() {
         )}
 
         {error && (
-          <div className="error-container">
-            <p>Error: {error}</p>
+          <div className="info-banner">
+            <p>{error}</p>
           </div>
         )}
 
