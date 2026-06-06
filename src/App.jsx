@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import _ from 'lodash';
+import React, { useState, useEffect, useRef } from 'react';
+import sortBy from 'lodash/sortBy';
+import sumBy from 'lodash/sumBy';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import './App.css';
 
-// Expensive calculation in render path (simulates CPU load)
-const formatTimestampSlow = (timestamp) => {
-  if (!timestamp) return '';
-  const start = performance.now();
-  // Artificially block the main thread for 1ms per item to simulate complex rendering logic
-  while (performance.now() - start < 1.5) {
-    // block
-  }
-  return new Date(timestamp * 1000).toLocaleString();
-};
+// Reusable date formatter created once outside render to avoid recreation overhead
+const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
 
-// Sub-component for an individual article item
-function ArticleItem({ article }) {
+// Optimized ArticleItem component using React.memo to prevent re-renders when props are identical
+const ArticleItem = React.memo(function ArticleItem({ article }) {
   if (!article) return null;
   
-  const formattedDate = formatTimestampSlow(article.time);
+  // Memoize timestamp format to avoid formatting on irrelevant renders
+  const formattedDate = React.useMemo(() => {
+    if (!article.time) return '';
+    return dateTimeFormatter.format(new Date(article.time * 1000));
+  }, [article.time]);
 
   return (
     <div className="article-card" data-testid="article-item">
@@ -39,36 +40,13 @@ function ArticleItem({ article }) {
       </div>
     </div>
   );
-}
+});
 
-// StatsPanel component to display simulated statistics (to be code-split later)
-function StatsPanel({ articles }) {
-  // Simulates a heavy dashboard widget that isn't needed for the primary UI
-  const totalScore = _.sumBy(articles, 'score') || 0;
-  const averageScore = articles.length ? (totalScore / articles.length).toFixed(1) : 0;
-  
-  return (
-    <div className="stats-panel">
-      <h3>Aggregate Story Metrics</h3>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h4>Total Score</h4>
-          <p>{totalScore}</p>
-        </div>
-        <div className="stat-card">
-          <h4>Average Score</h4>
-          <p>{averageScore}</p>
-        </div>
-        <div className="stat-card">
-          <h4>Total Articles Loaded</h4>
-          <p>{articles.length}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Lazy loaded StatsPanel component for code splitting
+const StatsPanel = React.lazy(() => import('./StatsPanel'));
 
 function App() {
+  const parentRef = useRef(null);
   const [articles, setArticles] = useState([]);
   const [filterText, setFilterText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,26 +69,27 @@ function App() {
         const targetIds = storyIds.slice(0, 500);
         setFetchProgress({ current: 0, total: targetIds.length });
         
-        const fetchedStories = [];
-        
-        // Anti-pattern: Sequential loop executing N+1 requests
-        for (let i = 0; i < targetIds.length; i++) {
-          const id = targetIds[i];
+        // Parallelized fetching using Promise.all
+        let completedCount = 0;
+        const storyPromises = targetIds.map(async (id) => {
           try {
             const storyResp = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
             if (storyResp.ok) {
               const storyData = await storyResp.json();
-              if (storyData) {
-                fetchedStories.push(storyData);
-              }
+              completedCount++;
+              setFetchProgress({ current: completedCount, total: targetIds.length });
+              return storyData;
             }
           } catch (e) {
             console.error(`Failed to fetch story ${id}`, e);
           }
-          setFetchProgress({ current: i + 1, total: targetIds.length });
-        }
+          completedCount++;
+          setFetchProgress({ current: completedCount, total: targetIds.length });
+          return null;
+        });
         
-        setArticles(fetchedStories);
+        const fetchedStories = await Promise.all(storyPromises);
+        setArticles(fetchedStories.filter(Boolean));
       } catch (err) {
         console.error('Error fetching stories:', err);
         setError(err.message);
@@ -127,20 +106,31 @@ function App() {
     article && article.title && article.title.toLowerCase().includes(filterText.toLowerCase())
   );
 
-  // Anti-pattern: Inefficient dependency usage (full lodash sortBy)
+  // Optimized: Cherry-picked sortBy import used
   const displayArticles = sortByScore 
-    ? _.sortBy(filteredArticles, (o) => -o.score) 
+    ? sortBy(filteredArticles, (o) => -o.score) 
     : filteredArticles;
+
+  const rowVirtualizer = useVirtualizer({
+    count: displayArticles.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 160,
+    overscan: 5,
+  });
 
   return (
     <div className="app-container">
-      {/* Unoptimized Hero Image: Large size, no dimensions/srcset/lazy-loading */}
+      {/* Optimized Hero Image: Uses WebP format, explicit dimensions, and responsive srcset */}
       <div className="hero-banner">
         <img 
-          src="/hero.jpg" 
+          src="/hero.webp" 
           alt="News Hero Banner" 
           data-testid="hero-image"
-          className="hero-image-raw"
+          className="hero-image-optimized"
+          width="1200"
+          height="350"
+          srcset="/hero-600.webp 600w, /hero-1200.webp 1200w, /hero-1800.webp 1800w"
+          sizes="(max-width: 600px) 600px, (max-width: 1200px) 1200px, 1800px"
         />
         <div className="hero-overlay">
           <h1>HackerNews Portal</h1>
@@ -175,8 +165,12 @@ function App() {
           </div>
         </div>
 
-        {/* Display Stats Panel */}
-        {showStats && <StatsPanel articles={articles} />}
+        {/* Display Stats Panel with lazy loading */}
+        {showStats && (
+          <React.Suspense fallback={<div className="loading-container"><p>Loading stats dashboard...</p></div>}>
+            <StatsPanel articles={articles} />
+          </React.Suspense>
+        )}
 
         {loading && (
           <div className="loading-container">
@@ -192,16 +186,53 @@ function App() {
           </div>
         )}
 
-        {/* Render ALL articles directly to the DOM (No virtualization) */}
+        {/* Render articles using list virtualization */}
         {!loading && (
-          <div className="articles-list" data-testid="article-list">
+          <>
             <div className="results-info">
               Showing {displayArticles.length} of {articles.length} stories
             </div>
-            {displayArticles.map((article) => (
-              <ArticleItem key={article?.id || Math.random()} article={article} />
-            ))}
-          </div>
+            <div
+              ref={parentRef}
+              className="articles-list-viewport"
+              style={{
+                height: '650px',
+                overflowY: 'auto',
+                border: '1px solid var(--border-slate)',
+                borderRadius: '12px',
+                padding: '12px',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+                data-testid="article-list"
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const article = displayArticles[virtualItem.index];
+                  return (
+                    <div
+                      key={virtualItem.key}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualItem.size}px`,
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
+                      <ArticleItem article={article} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         )}
       </main>
     </div>
