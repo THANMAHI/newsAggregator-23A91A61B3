@@ -1,0 +1,340 @@
+/* Base CSS configuration inside App.css */
+:root {
+  --bg-dark: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --border-slate: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary-accent: #38bdf8;
+  --primary-accent-hover: #0ea5e9;
+  --danger-color: #ef4444;
+  --success-color: #10b981;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-left: 1px solid var(--border-slate);
+  border-right: 1px solid var(--border-slate);
+  background-color: var(--bg-dark);
+}
+
+/* Hero Banner Style */
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+}
+
+.hero-image-raw {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* In the optimized version we will use class styling for optimized layout */
+.hero-image-optimized {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.95) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.hero-overlay h1 {
+  font-size: 3rem;
+  margin: 0 0 10px 0;
+  color: var(--text-main);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.hero-overlay p {
+  font-size: 1.25rem;
+  color: var(--primary-accent);
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Content Container */
+.content {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Controls Bar */
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  background-color: var(--bg-card);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-slate);
+}
+
+.search-box {
+  flex: 1;
+  min-width: 280px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-slate);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.btn-active {
+  background-color: var(--primary-accent);
+  color: var(--bg-dark);
+}
+
+.btn-active:hover {
+  background-color: var(--primary-accent-hover);
+}
+
+.btn-inactive {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  border-color: var(--border-slate);
+}
+
+.btn-inactive:hover {
+  border-color: var(--primary-accent);
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
+/* Stats Panel Styling */
+.stats-panel {
+  background-color: var(--bg-card);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-slate);
+}
+
+.stats-panel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--primary-accent);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background-color: var(--bg-dark);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-slate);
+  text-align: center;
+}
+
+.stat-card h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card p {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Article List & Cards */
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.results-info {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.article-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-slate);
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.article-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-accent);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+}
+
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.article-author {
+  font-weight: 500;
+}
+
+.article-score {
+  color: var(--primary-accent);
+  font-weight: 600;
+}
+
+.article-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.article-title a {
+  color: var(--text-main);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.article-title a:hover {
+  color: var(--primary-accent);
+}
+
+.article-footer {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Loading state, spinner, progress */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid var(--border-slate);
+  gap: 16px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(56, 189, 248, 0.1);
+  border-top-color: var(--primary-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.progress-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-accent);
+}
+
+.error-container {
+  padding: 20px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  border-radius: 8px;
+  text-align: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-banner {
+    height: 250px;
+  }
+  .hero-overlay h1 {
+    font-size: 2rem;
+  }
+  .content {
+    padding: 16px;
+  }
+  .controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .action-buttons {
+    justify-content: space-between;
+  }
+  .btn {
+    flex: 1;
+    text-align: center;
+  }
+}
